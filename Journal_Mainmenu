@@ -1,0 +1,172 @@
+package mainmenu;
+import java.io.*;
+import java.time.*;
+import java.util.*;
+
+public class MainMenu {
+    private User currentUser;
+    private Scanner scanner;
+    private static final String JOURNAL_FILE = "JournalData.txt";
+
+    public MainMenu(User user) {
+        this.currentUser = user;
+        this.scanner = new Scanner(System.in);
+    }
+    //====welcome page==
+    public void showWelcomePage(){
+        LocalTime now = LocalTime.now(ZoneId.of("GMT+8"));
+        String greeting;
+
+        if (now.isBefore(LocalTime.of(12, 0))) {
+        greeting = "Good Morning";
+        } else if (now.isBefore(LocalTime.of(17, 0))) {
+          greeting = "Good Afternoon";
+        } else {
+          greeting = "Good Evening";
+        }
+
+        System.out.println(greeting + ", " + currentUser.getDisplayName() + "!");
+         showMainMenu();
+    }
+    //===Main Menu==
+    private void showMainMenu(){
+        while(true){
+            System.out.println("\n===Main Menu===");
+            System.out.println("1. Create / Edit / View Journals");
+            System.out.println("2. Weekly Mood Summary");
+            System.out.println("3. Logout");
+            System.out.print(">");
+            
+            int choice=scanner.nextInt();
+            scanner.nextLine();//consume newLine
+             switch(choice){
+                 case 1:
+                     journalMenu();
+                     break;
+                 case 2:
+                     weeklySummary();
+                     break;
+                 case 3:
+                     System.out.println("You have logged out successfully.");
+                     return;
+                 default:
+                     System.out.println("Invalid  choice.Try again");
+             }
+        }
+}
+    //===Journal Menu===
+    private void journalMenu(){
+        LocalDate today=LocalDate.now();
+        System.out.println("\n==Journal Page===");
+        System.out.println("Select a date to view journal,or create a new journal");
+        System.out.println("Today:"+ today);
+        
+String todayEntry=getJournalEntry(today.toString());
+if (todayEntry==null){
+    System.out.println("No journal entry found for today.");
+    System.out.println("Would you like to create one?(y/n)");
+    String ans=scanner.nextLine();
+    if(ans.equalsIgnoreCase("y")){
+        createJournal(today.toString());
+    }
+}else{
+             System.out.println("Journal entry exists for today.");
+            System.out.println("1. View Journal");
+            System.out.println("2. Edit Journal");
+            System.out.println("3. Back to Menu");
+            System.out.print("> ");
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            if (choice == 1) {
+                System.out.println("=== Journal Entry for " + today + " ===");
+                System.out.println(todayEntry);
+            } else if (choice == 2) {
+                editJournal(today.toString());
+            }
+        }
+}
+   // === Create Journal ===
+    private void createJournal(String date) {
+        System.out.println("Enter your journal entry for " + date + ":");
+        String entry = scanner.nextLine();
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(JOURNAL_FILE, true))) {
+            bw.write(date + "," + entry + ",WeatherPlaceholder,MoodPlaceholder\n");
+            System.out.println("Journal saved successfully!");
+        } catch (IOException e) {
+            System.out.println("Error saving journal: " + e.getMessage());
+        }
+    }
+
+    // === Edit Journal ===
+    private void editJournal(String date) {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(JOURNAL_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(date)) {
+                    System.out.println("Edit your journal entry for " + date + ":");
+                    String newEntry = scanner.nextLine();
+                    line = date + "," + newEntry + ",WeatherPlaceholder,MoodPlaceholder";
+                } 
+lines.add(line);
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading journal: " + e.getMessage());
+        }
+
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(JOURNAL_FILE))) {
+            for (String l : lines) {
+                bw.write(l + "\n");
+            }
+            System.out.println("Journal updated successfully!");
+        } catch (IOException e) {
+            System.out.println("Error writing journal: " + e.getMessage());
+        }
+    }
+
+    // === Get Journal Entry ===
+    private String getJournalEntry(String date) {
+        try (BufferedReader br = new BufferedReader(new FileReader(JOURNAL_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.startsWith(date)) {
+                    String[] parts = line.split(",", 4);
+                    return parts[1]; // journal text
+                }
+            }
+        } catch (IOException e) {
+            return null;
+        }
+        return null;
+    }
+
+    // === Weekly Summary ===
+    private void weeklySummary() {
+        LocalDate today = LocalDate.now();
+        System.out.println("\n=== Weekly Summary ===");
+
+        try (BufferedReader br = new BufferedReader(new FileReader(JOURNAL_FILE))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                String[] parts = line.split(",", 4);
+                LocalDate entryDate = LocalDate.parse(parts[0]);
+
+                if (!entryDate.isBefore(today.minusDays(7))) {
+                    System.out.println(parts[0] + " | Weather: " + parts[2] + " | Mood: " + parts[3]);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading weekly summary: " + e.getMessage());
+        }
+    }
+    public static void main(String[] args) {
+    // Create a test user
+    User testUser = new User("s100201@student.fop", "pw-Stud#1", "Foo Bar");
+
+    // Launch the menu
+    MainMenu menu = new MainMenu(testUser);
+    menu.showWelcomePage();
+}
+
+}
