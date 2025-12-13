@@ -8,7 +8,7 @@ package smartjournaling;
  *
  * @author Jieshin
  */
-public class Main {
+public class JournalPageMain {
     public static void main(String[] args) {
         System.out.println("Starting program..."); // test line
         JournalPage jp = new JournalPage();

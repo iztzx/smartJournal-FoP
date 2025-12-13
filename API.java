@@ -23,7 +23,7 @@ public class API {
      * @return the response body as a String
      * @throws Exception if the request fails
      */
-    public String get(String apiURL) throws Exception {
+    public static String get(String apiURL) throws Exception {
         URL url = new URL(apiURL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
@@ -57,7 +57,7 @@ public class API {
      * @return the response body as a String
      * @throws Exception if the request fails
      */
-    public String post(String apiURL, String bearerToken, String jsonBody) throws Exception {
+    public static String post(String apiURL, String bearerToken, String jsonBody) throws Exception {
         URL url = new URL(apiURL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 

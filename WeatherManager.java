@@ -87,10 +87,15 @@ public class WeatherManager {
     }
 
     private static String fetchWeatherData(LocationData loc) {
-        // timezone=auto allows the server to determine local time for the coordinates
-        String url = WEATHER_API_BASE + "?latitude=" + loc.lat + "&longitude=" + loc.lon
-                + "&current_weather=true&timezone=auto";
-        return API.get(url);
+        try {
+            // timezone=auto allows the server to determine local time for the coordinates
+            String url = WEATHER_API_BASE + "?latitude=" + loc.lat + "&longitude=" + loc.lon
+                    + "&current_weather=true&timezone=auto";
+            return API.get(url);
+        } catch (Exception e) {
+            System.err.println("[WeatherManager] Weather fetch error: " + e.getMessage());
+            return null;
+        }
     }
 
     private static String parseAndFormatWeather(String city, String json, boolean english) {
